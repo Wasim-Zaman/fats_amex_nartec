@@ -3,6 +3,7 @@ import 'package:fats_amex_nartec/view/screens/activity_selection_screen.dart';
 import 'package:fats_amex_nartec/view/widgets/buttons/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_images.dart';
 import '../../widgets/text_fields/custom_text_field.dart';
 
@@ -51,8 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFFE8F5E9) // Light mint green
-                        : const Color(0xFF0A1F0D), // Dark mint green
+                        ? AppColors.mintGreen // Light mint green
+                        : AppColors.darkMintGreen, // Dark mint green
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(

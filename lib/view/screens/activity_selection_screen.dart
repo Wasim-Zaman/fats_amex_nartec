@@ -1,3 +1,5 @@
+import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
+import 'package:fats_amex_nartec/view/screens/dashboard/locations/locations_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_icons.dart';
@@ -31,7 +33,12 @@ class ActivitySelectionScreen extends StatelessWidget {
                 _buildActivityCard(
                   'Locations',
                   AppIcons.location,
-                  onTap: () {/* TODO: Handle navigation */},
+                  onTap: () {
+                    NavigationUtil.push(
+                      context,
+                      const LocationsScreen(),
+                    );
+                  },
                 ),
                 _buildActivityCard(
                   'Categories',
