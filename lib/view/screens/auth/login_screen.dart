@@ -1,3 +1,6 @@
+import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
+import 'package:fats_amex_nartec/view/screens/activity_selection_screen.dart';
+import 'package:fats_amex_nartec/view/widgets/buttons/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_images.dart';
@@ -31,21 +34,19 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             key: _formKey,
             child: Column(
+              spacing: 24,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
                 // Logo
                 Image.asset(
                   AppImages.express,
                   height: 60,
                 ),
-                const SizedBox(height: 24),
                 // FATS Logo
                 Image.asset(
                   AppImages.logo,
                   height: 100,
                 ),
-                const SizedBox(height: 40),
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -55,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
+                    spacing: 24,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
@@ -64,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 24),
                       // Email Field
                       CustomTextField(
                         controller: _emailController,
@@ -78,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
                       // Password Field
                       CustomTextField(
                         controller: _passwordController,
@@ -92,22 +92,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
                       // Login Button
-                      ElevatedButton(
+                      CustomElecatedButton(
+                        title: 'Login Now',
                         onPressed: _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF000080), // Navy blue
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          'Login Now',
-                          style: TextStyle(fontSize: 16),
-                        ),
                       ),
                     ],
                   ),
@@ -120,9 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Inside your login screen
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement login logic
+      // Navigate to activity selection screen
+      NavigationUtil.pushReplacement(
+        context,
+        const ActivitySelectionScreen(),
+      );
     }
   }
 }
