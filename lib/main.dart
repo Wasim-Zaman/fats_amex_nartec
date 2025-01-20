@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'core/constants/constants.dart';
 import 'core/theme/dark_theme.dart';
 import 'core/theme/light_theme.dart';
 import 'view/screens/auth/login_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  PackageInfo.instance.init();
   runApp(const MyApp());
 }
 
