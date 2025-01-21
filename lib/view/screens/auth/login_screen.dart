@@ -2,19 +2,21 @@ import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
 import 'package:fats_amex_nartec/view/screens/activity_selection_screen.dart';
 import 'package:fats_amex_nartec/view/widgets/buttons/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_images.dart';
+import '../../../providers/auth/auth_provider.dart';
 import '../../widgets/text_fields/custom_text_field.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -26,8 +28,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      await ref.read(authProvider.notifier).login(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (previous, next) {
+      next.whenOrNull(
+        success: (user) {
+          NavigationUtil.pushReplacement(
+              context, const ActivitySelectionScreen());
+        },
+        error: (message) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
+          );
+        },
+      );
+    });
+
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -97,6 +124,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       CustomElecatedButton(
                         title: 'Login Now',
                         onPressed: _handleLogin,
+                        isLoading: authState.maybeWhen(
+                          loading: () => true,
+                          orElse: () => false,
+                        ),
                       ),
                     ],
                   ),
@@ -107,16 +138,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  // Inside your login screen
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      // Navigate to activity selection screen
-      NavigationUtil.pushReplacement(
-        context,
-        const ActivitySelectionScreen(),
-      );
-    }
   }
 }
