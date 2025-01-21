@@ -1,4 +1,5 @@
 import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
+import 'package:fats_amex_nartec/core/utils/snack_util.dart';
 import 'package:fats_amex_nartec/view/screens/activity_selection_screen.dart';
 import 'package:fats_amex_nartec/view/widgets/buttons/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
@@ -46,9 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               context, const ActivitySelectionScreen());
         },
         error: (message) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: Colors.red),
-          );
+          SnackUtil.showError(context, message);
         },
       );
     });
