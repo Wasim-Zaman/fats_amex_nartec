@@ -80,7 +80,7 @@ class CustomElecatedButton extends StatelessWidget {
           children: [
             const Icon(
               Icons.check_circle,
-              color: Colors.white,
+              color: AppColors.white,
               size: 24,
             ),
             const SizedBox(width: 8),
@@ -89,7 +89,7 @@ class CustomElecatedButton extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
           ],
@@ -100,7 +100,7 @@ class CustomElecatedButton extends StatelessWidget {
           children: [
             const Icon(
               Icons.error,
-              color: Colors.white,
+              color: AppColors.white,
               size: 24,
             ),
             const SizedBox(width: 8),
@@ -109,7 +109,7 @@ class CustomElecatedButton extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
           ],
