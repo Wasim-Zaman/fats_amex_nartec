@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../core/constants/app_colors.dart';
+import 'dashboard/new_assets/new_assets_screen.dart';
 
 class ActivitySelectionScreen extends StatelessWidget {
   const ActivitySelectionScreen({super.key});
@@ -48,7 +49,9 @@ class ActivitySelectionScreen extends StatelessWidget {
                 _buildActivityCard(
                   'New Assets',
                   AppIcons.newAssets,
-                  onTap: () {/* TODO: Handle navigation */},
+                  onTap: () {
+                    NavigationUtil.push(context, const NewAssetsScreen());
+                  },
                 ),
                 _buildActivityCard(
                   'Assets Verification',
