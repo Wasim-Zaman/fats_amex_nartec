@@ -38,13 +38,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _handleNavigate() {
+    NavigationUtil.pushReplacement(context, const ActivitySelectionScreen());
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       next.whenOrNull(
         success: (user) {
-          NavigationUtil.pushReplacement(
-              context, const ActivitySelectionScreen());
+          Future.delayed(const Duration(seconds: 1), () {
+            _handleNavigate();
+          });
         },
         error: (message) {
           SnackUtil.showError(context, message);
@@ -123,9 +128,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       CustomElecatedButton(
                         title: 'Login Now',
                         onPressed: _handleLogin,
-                        isLoading: authState.maybeWhen(
-                          loading: () => true,
-                          orElse: () => false,
+                        buttonState: authState.maybeWhen(
+                          loading: () => ButtonState.loading,
+                          orElse: () => ButtonState.normal,
+                          success: (user) => ButtonState.success,
+                          error: (message) => ButtonState.error,
                         ),
                       ),
                     ],
