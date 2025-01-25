@@ -1,3 +1,4 @@
+import 'package:fats_amex_nartec/core/extensions/context.dart';
 import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
 import 'package:fats_amex_nartec/view/screens/dashboard/locations/locations_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ class ActivitySelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryBlue,
       appBar: AppBar(
         title: const Text('Activity Selections'),
       ),
@@ -21,7 +21,9 @@ class ActivitySelectionScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9), // Light mint green background
+              color: context.lightMode
+                  ? AppColors.mintGreen
+                  : AppColors.darkMintGreen,
               borderRadius: BorderRadius.circular(16),
             ),
             child: GridView.count(
@@ -32,6 +34,7 @@ class ActivitySelectionScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 _buildActivityCard(
+                  context,
                   'Locations',
                   AppIcons.location,
                   onTap: () {
@@ -42,11 +45,13 @@ class ActivitySelectionScreen extends StatelessWidget {
                   },
                 ),
                 _buildActivityCard(
+                  context,
                   'Categories',
                   AppIcons.categories,
                   onTap: () {/* TODO: Handle navigation */},
                 ),
                 _buildActivityCard(
+                  context,
                   'New Assets',
                   AppIcons.newAssets,
                   onTap: () {
@@ -54,26 +59,31 @@ class ActivitySelectionScreen extends StatelessWidget {
                   },
                 ),
                 _buildActivityCard(
+                  context,
                   'Assets Verification',
                   AppIcons.assetsVerification,
                   onTap: () {/* TODO: Handle navigation */},
                 ),
                 _buildActivityCard(
+                  context,
                   'Captured',
                   AppIcons.captured,
                   onTap: () {/* TODO: Handle navigation */},
                 ),
                 _buildActivityCard(
+                  context,
                   'Verified Assets',
                   AppIcons.verifiedAssets,
                   onTap: () {/* TODO: Handle navigation */},
                 ),
                 _buildActivityCard(
+                  context,
                   'Asset Tags',
                   AppIcons.assetsTags,
                   onTap: () {/* TODO: Handle navigation */},
                 ),
                 _buildActivityCard(
+                  context,
                   'Update',
                   AppIcons.update,
                   onTap: () {/* TODO: Handle navigation */},
@@ -87,6 +97,7 @@ class ActivitySelectionScreen extends StatelessWidget {
   }
 
   Widget _buildActivityCard(
+    BuildContext context,
     String title,
     String iconPath, {
     required VoidCallback onTap,
@@ -103,21 +114,19 @@ class ActivitySelectionScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 8.0,
             children: [
-              Image.asset(
-                iconPath,
-                height: 48,
-                width: 48,
-              ),
-              const SizedBox(height: 8),
-              FittedBox(
+              Expanded(child: Image.asset(iconPath)),
+              Expanded(
                 child: Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.primaryBlue, // Navy blue text
+                    color: context.lightMode
+                        ? AppColors.primaryBlue
+                        : AppColors.mintGreen, // Navy blue text
                   ),
                 ),
               ),

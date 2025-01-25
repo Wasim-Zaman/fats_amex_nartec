@@ -2,7 +2,6 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/snack_util.dart';
 import '../../../widgets/tables/custom_data_table.dart';
 import '../../../widgets/tables/data_table_container.dart';
@@ -52,7 +51,6 @@ class _AssetsLocationsScreenState extends ConsumerState<AssetsLocationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryBlue,
       appBar: AppBar(
         title: const Text('Asset Locations'),
       ),

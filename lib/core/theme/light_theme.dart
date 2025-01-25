@@ -60,6 +60,7 @@ class LightTheme {
           backgroundColor: AppColors.primaryBlue,
           foregroundColor: AppColors.textLight,
           elevation: 0,
+          scrolledUnderElevation: 0,
           centerTitle: true, // Centers title on both platforms
           systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,

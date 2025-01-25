@@ -1,3 +1,4 @@
+import 'package:fats_amex_nartec/core/extensions/context.dart';
 import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -61,7 +62,6 @@ class _LocationsScreenState extends State<LocationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryBlue,
       appBar: AppBar(
         title: const Text('Locations'),
       ),
@@ -70,7 +70,9 @@ class _LocationsScreenState extends State<LocationsScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: context.lightMode
+                  ? AppColors.white
+                  : AppColors.backgroundDark,
               borderRadius: BorderRadius.circular(16),
             ),
             child: SingleChildScrollView(

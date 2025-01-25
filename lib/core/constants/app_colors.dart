@@ -31,5 +31,5 @@ class AppColors {
   // other colors
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF000000);
-  static const textFieldYellow = Color(0xFFFDE047);
+  static const textFieldLightYellow = Color(0xFFFDE047);
 }

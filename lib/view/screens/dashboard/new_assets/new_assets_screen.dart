@@ -1,4 +1,5 @@
 import 'package:fats_amex_nartec/core/constants/app_colors.dart';
+import 'package:fats_amex_nartec/core/extensions/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -77,7 +78,9 @@ class _NewAssetsScreenState extends ConsumerState<NewAssetsScreen> {
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _assetCategoryController,
-                fillColor: AppColors.textFieldYellow,
+                fillColor: context.lightMode
+                    ? AppColors.textFieldLightYellow
+                    : AppColors.secondaryBlue,
                 labelText: 'Asset Category Description',
                 prefixIcon: Icons.category,
                 suffixIcon: IconButton(

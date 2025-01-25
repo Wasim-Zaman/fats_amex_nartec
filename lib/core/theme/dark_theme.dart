@@ -57,10 +57,11 @@ class DarkTheme {
 
         // AppBar theme with Google Fonts
         appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.backgroundDark,
           foregroundColor: AppColors.textLight,
           elevation: 0,
           centerTitle: true,
+          scrolledUnderElevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,
