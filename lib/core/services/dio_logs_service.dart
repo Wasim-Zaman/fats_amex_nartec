@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 class LogsService {
@@ -21,8 +21,8 @@ class LogsService {
   );
 
   void logRequest(
-    String url,
     String method,
+    String url,
     Map<String, String> headers,
     dynamic body,
   ) {
@@ -45,32 +45,34 @@ class LogsService {
     _logger.i(requestLog.toString());
   }
 
-  void logResponse(http.Response response, Duration duration) {
+  void logResponse(Response response, Duration duration) {
     final responseLog = StringBuffer();
     responseLog.writeln('\n📨 RESPONSE DETAILS [${duration.inMilliseconds}ms]');
     responseLog.writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     responseLog.writeln('STATUS: ${response.statusCode}');
-    responseLog.writeln('URL: ${response.request?.url}');
+    responseLog.writeln('URL: ${response.requestOptions.uri}');
 
-    if (response.headers.isNotEmpty) {
+    if (response.headers.map.isNotEmpty) {
       responseLog.writeln(
-        'HEADERS: ${const JsonEncoder.withIndent('  ').convert(response.headers)}',
+        'HEADERS: ${const JsonEncoder.withIndent('  ').convert(response.headers.map)}',
       );
     }
 
-    if (response.body.isNotEmpty) {
+    if (response.data != null) {
       try {
-        final dynamic decodedBody = json.decode(response.body);
         final prettyJson =
-            const JsonEncoder.withIndent('  ').convert(decodedBody);
+            const JsonEncoder.withIndent('  ').convert(response.data);
         responseLog.writeln('BODY: $prettyJson');
       } catch (e) {
-        responseLog.writeln('BODY: ${response.body}');
+        responseLog.writeln('BODY: ${response.data}');
       }
     }
 
-    final icon =
-        response.statusCode >= 200 && response.statusCode < 300 ? '✅' : '❌';
+    final icon = response.statusCode != null &&
+            response.statusCode! >= 200 &&
+            response.statusCode! < 300
+        ? '✅'
+        : '❌';
     _logger.i('$icon ${responseLog.toString()}');
   }
 
@@ -110,6 +112,31 @@ class LogsService {
   }
 
   void logVerbose(String message) {
-    _logger.v('�� $message');
+    _logger.v('📝 $message');
+  }
+
+  void logDioError(DioException error) {
+    final errorLog = StringBuffer();
+    errorLog.writeln('\n❌ DIO ERROR');
+    errorLog.writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    errorLog.writeln('TYPE: ${error.type}');
+    errorLog.writeln('URL: ${error.requestOptions.uri}');
+    errorLog.writeln('METHOD: ${error.requestOptions.method}');
+
+    if (error.response != null) {
+      errorLog.writeln('STATUS: ${error.response?.statusCode}');
+      if (error.response?.data != null) {
+        try {
+          final prettyJson =
+              const JsonEncoder.withIndent('  ').convert(error.response?.data);
+          errorLog.writeln('RESPONSE: $prettyJson');
+        } catch (e) {
+          errorLog.writeln('RESPONSE: ${error.response?.data}');
+        }
+      }
+    }
+
+    errorLog.writeln('MESSAGE: ${error.message}');
+    _logger.e(errorLog.toString(), error: error, stackTrace: error.stackTrace);
   }
 }

@@ -1,6 +1,8 @@
 import 'package:fats_amex_nartec/core/extensions/context.dart';
 import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
+import 'package:fats_amex_nartec/view/screens/dashboard/categories/categories_screen.dart';
 import 'package:fats_amex_nartec/view/screens/dashboard/locations/locations_screen.dart';
+import 'package:fats_amex_nartec/view/screens/dashboard/verified_assets/verified_assets_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_icons.dart';
@@ -48,7 +50,12 @@ class ActivitySelectionScreen extends StatelessWidget {
                   context,
                   'Categories',
                   AppIcons.categories,
-                  onTap: () {/* TODO: Handle navigation */},
+                  onTap: () {
+                    NavigationUtil.push(
+                      context,
+                      const CategoriesScreen(),
+                    );
+                  },
                 ),
                 _buildActivityCard(
                   context,
@@ -74,7 +81,12 @@ class ActivitySelectionScreen extends StatelessWidget {
                   context,
                   'Verified Assets',
                   AppIcons.verifiedAssets,
-                  onTap: () {/* TODO: Handle navigation */},
+                  onTap: () {
+                    NavigationUtil.push(
+                      context,
+                      const VerifiedAssetsScreen(),
+                    );
+                  },
                 ),
                 _buildActivityCard(
                   context,
