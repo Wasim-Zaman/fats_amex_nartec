@@ -1,3 +1,5 @@
+import 'package:fats_amex_nartec/core/utils/date_format.dart';
+import 'package:fats_amex_nartec/models/category/category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +14,6 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
-  int _currentPage = 1;
   static const _pageSize = 10;
 
   @override
@@ -20,7 +21,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(categoriesProvider.notifier).fetchCategories(
-            page: _currentPage,
+            page: 1,
             limit: _pageSize,
           );
     });
@@ -39,7 +40,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
         child: Column(
           children: [
             Row(
-              spacing: 8.0,
               children: [
                 Flexible(
                   child: TextField(
@@ -57,62 +57,19 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     },
                   ),
                 ),
-                // Flexible(
-                //   child: ElevatedButton(
-                //     onPressed: () {
-                //       // TODO: Implement add category
-                //     },
-                //     child: const Text('Add Category'),
-                //   ),
-                // ),
               ],
             ),
             Expanded(
               child: categoriesState.when(
-                data: (categories) => SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('MAIN CATEGORY CODE')),
-                        DataColumn(label: Text('MAIN CATEGORY DESCRIPTION')),
-                        DataColumn(label: Text('MAIN DESCRIPTION')),
-                        DataColumn(label: Text('SUB CATEGORY CODE')),
-                        DataColumn(label: Text('SUB CATEGORY DESCRIPTION')),
-                        DataColumn(label: Text('COUNTER')),
-                        DataColumn(label: Text('ACTIONS')),
-                      ],
-                      rows: categories.map((category) {
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(category.mainCatCode)),
-                            DataCell(Text(category.mainCategoryDesc)),
-                            DataCell(Text(category.mainDescription)),
-                            DataCell(Text(category.subCategoryCode)),
-                            DataCell(Text(category.subCategoryDesc)),
-                            DataCell(Text(category.counter.toString())),
-                            DataCell(Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {
-                                    // TODO: Implement edit
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  color: Colors.red,
-                                  onPressed: () {
-                                    // TODO: Implement delete
-                                  },
-                                ),
-                              ],
-                            )),
-                          ],
+                data: (categories) => CategoriesDataTable(
+                  categories: categories,
+                  onPageChanged: (page) {
+                    ref.read(categoriesProvider.notifier).fetchCategories(
+                          page: page + 1,
+                          limit: _pageSize,
+                          search: _searchController.text,
                         );
-                      }).toList(),
-                    ),
-                  ),
+                  },
                 ),
                 loading: () => const Center(
                   child: CircularProgressIndicator(),
@@ -122,77 +79,72 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 ),
               ),
             ),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total ${categoriesState.whenOrNull(
-                          data: (categories) => categories.length,
-                        ) ?? 0} categories',
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: _currentPage > 1
-                            ? () {
-                                setState(() {
-                                  _currentPage--;
-                                });
-                                _fetchCategories();
-                              }
-                            : null,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _currentPage.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: categoriesState.whenOrNull(
-                                  data: (categories) =>
-                                      categories.length >= _pageSize,
-                                ) ??
-                                false
-                            ? () {
-                                setState(() {
-                                  _currentPage++;
-                                });
-                                _fetchCategories();
-                              }
-                            : null,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _fetchCategories() {
-    ref.read(categoriesProvider.notifier).fetchCategories(
-          page: _currentPage,
-          limit: _pageSize,
-        );
+class CategoriesDataTable extends StatelessWidget {
+  final List<Category> categories;
+  final Function(int) onPageChanged;
+
+  const CategoriesDataTable({
+    super.key,
+    required this.categories,
+    required this.onPageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PaginatedDataTable(
+      source: CategoriesDataSource(categories),
+      header: Text('Categories (${categories.length})'),
+      columns: const [
+        DataColumn(label: Text('MAIN CATEGORY CODE')),
+        DataColumn(label: Text('MAIN CATEGORY DESCRIPTION')),
+        DataColumn(label: Text('MAIN DESCRIPTION')),
+        DataColumn(label: Text('SUB CATEGORY CODE')),
+        DataColumn(label: Text('SUB CATEGORY DESCRIPTION')),
+        DataColumn(label: Text('COUNTER')),
+        DataColumn(label: Text('CREATED AT')),
+        DataColumn(label: Text('UPDATED AT')),
+      ],
+      onPageChanged: onPageChanged,
+      rowsPerPage: 10,
+    );
+  }
+}
+
+class CategoriesDataSource extends DataTableSource {
+  final List<Category> _categories;
+
+  CategoriesDataSource(this._categories);
+
+  @override
+  DataRow getRow(int index) {
+    final category = _categories[index];
+    return DataRow(
+      cells: [
+        DataCell(Text(category.mainCatCode)),
+        DataCell(Text(category.mainCategoryDesc)),
+        DataCell(Text(category.mainDescription)),
+        DataCell(Text(category.subCategoryCode)),
+        DataCell(Text(category.subCategoryDesc)),
+        DataCell(Text(category.counter.toString())),
+        DataCell(Text(dateFormat(category.createdAt))),
+        DataCell(Text(dateFormat(category.updatedAt))),
+      ],
+    );
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => _categories.length;
+
+  @override
+  int get selectedRowCount => 0;
 }
