@@ -116,7 +116,7 @@ class _CustomPaginatedTableState<T> extends State<CustomPaginatedTable<T>> {
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
                         headingRowColor:
-                            MaterialStateProperty.all(Colors.grey.shade100),
+                            WidgetStateProperty.all(Colors.grey.shade100),
                         columns: widget.columnTitles
                             .map((title) => DataColumn(
                                   label: Text(

@@ -158,7 +158,7 @@ class DarkTheme {
         ),
 
         // Card theme
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: AppColors.cardDark,
           elevation: 2,
           shape: RoundedRectangleBorder(

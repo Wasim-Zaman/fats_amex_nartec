@@ -162,7 +162,7 @@ class LightTheme {
         ),
 
         // Card theme
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: AppColors.cardLight,
           elevation: 2,
           shape: RoundedRectangleBorder(
