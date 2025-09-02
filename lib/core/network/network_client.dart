@@ -17,9 +17,9 @@ enum RequestMethodName { get, post, put, patch, delete }
 typedef ProgressCallback = void Function(
     int count, int total, double percentage);
 
-class BaseClient {
-  static BaseClient? _instance;
-  static BaseClient get instance => _instance ??= BaseClient._internal();
+class NetworkClient {
+  static NetworkClient? _instance;
+  static NetworkClient get instance => _instance ??= NetworkClient._internal();
 
   late final Dio _dio;
   final Logger _logger;
@@ -38,7 +38,7 @@ class BaseClient {
   Stream<double> get downloadProgressStream =>
       _downloadProgressController.stream;
 
-  BaseClient._internal({
+  NetworkClient._internal({
     Dio? dio,
     Duration timeout = const Duration(minutes: 1),
     Logger? logger,
@@ -61,13 +61,13 @@ class BaseClient {
   }
 
   // Factory constructor for custom configuration
-  factory BaseClient.configure({
+  factory NetworkClient.configure({
     Dio? dio,
     Duration timeout = const Duration(minutes: 1),
     Logger? logger,
     String? baseUrl,
   }) {
-    _instance = BaseClient._internal(
+    _instance = NetworkClient._internal(
       dio: dio,
       timeout: timeout,
       logger: logger,

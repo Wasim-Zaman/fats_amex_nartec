@@ -1,12 +1,12 @@
-import '../core/services/http_service.dart';
+import '../core/network/network_client.dart';
 import '../models/inventory/inventory.dart';
 import '../models/inventory/inventory_pagination.dart';
 
 class InventoryRepository {
-  final HttpService _httpService;
+  final NetworkClient _networkClient;
 
-  InventoryRepository({HttpService? httpService})
-      : _httpService = httpService ?? HttpService();
+  InventoryRepository({NetworkClient? networkClient})
+      : _networkClient = networkClient ?? NetworkClient.instance;
 
   Future<(List<Inventory>, InventoryPagination)> getInventoryItems({
     int page = 1,
@@ -15,18 +15,17 @@ class InventoryRepository {
     String order = 'desc',
   }) async {
     try {
-      final response = await _httpService.request(
+      final response = await _networkClient.get(
         '/v1/inventory',
-        method: HttpMethod.get,
-        // queryParameters: {
-        //   'page': page,
-        //   'limit': limit,
-        //   'sortBy': sortBy,
-        //   'order': order,
-        // },
+        queryParams: {
+          'page': page.toString(),
+          'limit': limit.toString(),
+          'sortBy': sortBy,
+          'order': order,
+        },
       );
 
-      if (response.statusCode == 200) {
+      if (response.isSuccess && response.data != null) {
         final data = response.data['data'];
         final items = (data['items'] as List)
             .map((item) => Inventory.fromJson(item))
@@ -35,7 +34,9 @@ class InventoryRepository {
         return (items, pagination);
       }
 
-      throw Exception(response.data['message'] ?? 'Failed to fetch inventory');
+      throw Exception(response.errorMessage.isNotEmpty
+          ? response.errorMessage
+          : 'Failed to fetch inventory');
     } catch (e) {
       throw Exception('Failed to fetch inventory: $e');
     }

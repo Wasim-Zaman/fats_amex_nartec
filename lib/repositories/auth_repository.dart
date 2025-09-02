@@ -1,41 +1,41 @@
-import 'package:dio/dio.dart';
 import 'package:fats_amex_nartec/models/user/user.dart';
 
-import '../core/services/http_service.dart';
+import '../core/network/network_client.dart';
 
 class AuthRepository {
-  final HttpService _httpService;
+  final NetworkClient _networkClient;
 
-  AuthRepository({HttpService? httpService})
-      : _httpService = httpService ?? HttpService();
+  AuthRepository({NetworkClient? networkClient})
+      : _networkClient = networkClient ?? NetworkClient.instance;
 
   Future<User> login({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await _httpService.request(
+      final response = await _networkClient.post(
         '/v1/user/login',
-        method: HttpMethod.post,
-        data: {
+        body: {
           'email': email,
           'password': password,
         },
       );
 
-      if (response.statusCode == 200) {
+      if (response.isSuccess && response.data != null) {
         final userData = response.data['data']['user'];
         // // Save tokens
-        // await _httpService.storage.saveTokens(
+        // await _networkClient.storage.saveTokens(
         //   accessToken: userData['accessToken'],
         //   refreshToken: userData['refreshToken'],
         // );
         return User.fromJson(userData);
       }
 
-      throw Exception(response.data['message'] ?? 'Login failed');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Login failed');
+      throw Exception(response.errorMessage.isNotEmpty
+          ? response.errorMessage
+          : 'Login failed');
+    } catch (e) {
+      throw Exception('Login failed: $e');
     }
   }
 }
