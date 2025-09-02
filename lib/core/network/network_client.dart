@@ -1,18 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:fats_amex_nartec/core/config/app_config.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
 import 'package:mime/mime.dart';
 
-import '../../view/screens/auth/login_screen.dart';
-import '../config/app_config.dart';
-import '../services/storage_service.dart';
-import '../utils/navigation_util.dart';
 import 'network_client_model.dart';
 
 enum RequestMethodName { get, post, put, patch, delete }
@@ -21,10 +18,6 @@ typedef ProgressCallback = void Function(
     int count, int total, double percentage);
 
 class BaseClient {
-  // Status codes for token expiry
-  static const int accessTokenExpiredCode = 419;
-  static const int refreshTokenExpiredCode = 420;
-
   static BaseClient? _instance;
   static BaseClient get instance => _instance ??= BaseClient._internal();
 
@@ -32,9 +25,6 @@ class BaseClient {
   final Logger _logger;
   final String _baseUrl;
   String? _authToken;
-  String? _refreshToken;
-  bool _isRefreshing = false;
-  final StorageService _storage = StorageService();
 
   // Progress tracking - using simple double variables
   double uploadProgress = 0.0;
@@ -97,136 +87,6 @@ class BaseClient {
 
   void clearAuthToken() {
     _authToken = null;
-  }
-
-  void setRefreshToken(String? token) {
-    _refreshToken = token;
-  }
-
-  String? getRefreshToken() {
-    return _refreshToken;
-  }
-
-  void clearRefreshToken() {
-    _refreshToken = null;
-  }
-
-  void setTokens({String? accessToken, String? refreshToken}) {
-    _authToken = accessToken;
-    _refreshToken = refreshToken;
-  }
-
-  void clearAllTokens() {
-    _authToken = null;
-    _refreshToken = null;
-  }
-
-  // Load tokens from storage
-  Future<void> loadTokensFromStorage() async {
-    _authToken = await _storage.getAccessToken();
-    _refreshToken = await _storage.getRefreshToken();
-  }
-
-  // Initialize client with tokens from storage
-  Future<void> initialize() async {
-    await loadTokensFromStorage();
-  }
-
-  // Clear any internal caches (if needed in the future)
-  void clearCache() {
-    _logger.i('🧹 Cache cleared');
-  }
-
-  // Refresh Token Logic
-  Future<bool> _refreshTokens() async {
-    if (_isRefreshing) return false;
-
-    try {
-      _isRefreshing = true;
-      final refreshToken = _refreshToken ?? await _storage.getRefreshToken();
-
-      if (refreshToken == null) {
-        return false;
-      }
-
-      final response = await _performDirectRequest(
-        '/v1/user/refresh-token',
-        method: RequestMethodName.post,
-        data: {'refreshToken': refreshToken},
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final accessToken = data['data']['accessToken'];
-        final newRefreshToken = data['data']['refreshToken'];
-
-        // Update in-memory tokens
-        _authToken = accessToken;
-        _refreshToken = newRefreshToken;
-
-        // Save to storage
-        await _storage.saveTokens(
-          accessToken: accessToken,
-          refreshToken: newRefreshToken,
-        );
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      _logger.e('❌ Token refresh failed: $e');
-      return false;
-    } finally {
-      _isRefreshing = false;
-    }
-  }
-
-  // Handle Unauthorized Access
-  void _handleUnauthorized(BuildContext? context) async {
-    await _storage.clearTokens();
-    clearAllTokens();
-    if (context != null && context.mounted) {
-      NavigationUtil.pushAndRemoveUntil(context, const LoginScreen());
-    }
-  }
-
-  // Direct request method for token refresh (to avoid recursion)
-  Future<Response> _performDirectRequest(
-    String endpoint, {
-    RequestMethodName method = RequestMethodName.get,
-    dynamic data,
-    Map<String, String>? headers,
-  }) async {
-    final requestHeaders = Map<String, dynamic>.from(_getDefaultHeaders());
-    if (headers != null) {
-      requestHeaders.addAll(headers);
-    }
-
-    final options = Options(headers: requestHeaders);
-    final fullUrl =
-        endpoint.startsWith('http') ? endpoint : '$_baseUrl$endpoint';
-
-    try {
-      switch (method) {
-        case RequestMethodName.get:
-          return await _dio.get(fullUrl, options: options);
-        case RequestMethodName.post:
-          return await _dio.post(fullUrl, data: data, options: options);
-        case RequestMethodName.put:
-          return await _dio.put(fullUrl, data: data, options: options);
-        case RequestMethodName.delete:
-          return await _dio.delete(fullUrl, options: options);
-        case RequestMethodName.patch:
-          return await _dio.patch(fullUrl, data: data, options: options);
-      }
-    } on DioException catch (e) {
-      return e.response ??
-          Response(
-            requestOptions: RequestOptions(path: fullUrl),
-            statusCode: 500,
-            data: {'message': 'Something went wrong'},
-          );
-    }
   }
 
   void _configureDio(Duration timeout) {
@@ -480,7 +340,6 @@ class BaseClient {
     Map<String, String>? pathParams,
     Map<String, String>? queryParams,
     String? bearerToken,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -504,64 +363,6 @@ class BaseClient {
       );
       stopwatch.stop();
 
-      // Handle Access Token Expiry
-      if (response.statusCode == accessTokenExpiredCode) {
-        if (kDebugMode) {
-          _logger.w('🔄 Token expired, attempting refresh...');
-        }
-
-        final refreshSuccess = await _refreshTokens();
-        if (refreshSuccess) {
-          if (kDebugMode) {
-            _logger.i('🔑 Token refresh successful, retrying request...');
-          }
-
-          // Retry the request with new token
-          final newHeaders = _buildHeaders(
-            headers: headers,
-            bearerToken: bearerToken,
-            skipAuth: skipAuth,
-          );
-
-          final retryResponse = await _dio.get(
-            fullUrl,
-            queryParameters: queryParams,
-            options: Options(
-              headers: newHeaders,
-              extra: {'duration': stopwatch.elapsed},
-            ),
-          );
-
-          return _processResponse(
-            response: retryResponse,
-            method: RequestMethodName.get,
-          );
-        } else if (context != null && context.mounted) {
-          if (kDebugMode) {
-            _logger.e('❌ Token refresh failed');
-          }
-          _handleUnauthorized(context);
-          return const NetworkClientModel.failure(
-            message: 'Session expired. Please login again.',
-            statusCode: 401,
-          );
-        }
-      }
-
-      // Handle Refresh Token Expiry
-      if (response.statusCode == refreshTokenExpiredCode &&
-          context != null &&
-          context.mounted) {
-        if (kDebugMode) {
-          _logger.e('🚫 Refresh token expired');
-        }
-        _handleUnauthorized(context);
-        return const NetworkClientModel.failure(
-          message: 'Session expired. Please login again.',
-          statusCode: 401,
-        );
-      }
-
       return _processResponse(
         response: response,
         method: RequestMethodName.get,
@@ -582,7 +383,6 @@ class BaseClient {
     Map<String, String>? pathParams,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -615,73 +415,6 @@ class BaseClient {
       );
       stopwatch.stop();
 
-      // Handle Access Token Expiry
-      if (response.statusCode == accessTokenExpiredCode) {
-        if (kDebugMode) {
-          _logger.w('🔄 Token expired, attempting refresh...');
-        }
-
-        final refreshSuccess = await _refreshTokens();
-        if (refreshSuccess) {
-          if (kDebugMode) {
-            _logger.i('🔑 Token refresh successful, retrying request...');
-          }
-
-          // Retry the request with new token
-          final newHeaders = _buildHeaders(
-            headers: headers,
-            bearerToken: bearerToken,
-            skipAuth: skipAuth,
-          );
-
-          final retryResponse = await _dio.post(
-            fullUrl,
-            data: body,
-            queryParameters: queryParams,
-            options: Options(
-              headers: newHeaders,
-              extra: {'duration': stopwatch.elapsed},
-            ),
-            onSendProgress: (count, total) {
-              final progress = total > 0 ? count / total : 0.0;
-              uploadProgress = progress;
-              onSendProgress?.call(count, total, progress);
-              _logger.d(
-                '📤 Upload progress: ${(progress * 100).toStringAsFixed(1)}%',
-              );
-            },
-          );
-
-          return _processResponse(
-            response: retryResponse,
-            method: RequestMethodName.post,
-          );
-        } else if (context != null && context.mounted) {
-          if (kDebugMode) {
-            _logger.e('❌ Token refresh failed');
-          }
-          _handleUnauthorized(context);
-          return const NetworkClientModel.failure(
-            message: 'Session expired. Please login again.',
-            statusCode: 401,
-          );
-        }
-      }
-
-      // Handle Refresh Token Expiry
-      if (response.statusCode == refreshTokenExpiredCode &&
-          context != null &&
-          context.mounted) {
-        if (kDebugMode) {
-          _logger.e('🚫 Refresh token expired');
-        }
-        _handleUnauthorized(context);
-        return const NetworkClientModel.failure(
-          message: 'Session expired. Please login again.',
-          statusCode: 401,
-        );
-      }
-
       return _processResponse(
         response: response,
         method: RequestMethodName.post,
@@ -704,7 +437,6 @@ class BaseClient {
     Map<String, String>? pathParams,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -808,7 +540,6 @@ class BaseClient {
     Map<String, String>? queryParams,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -841,73 +572,6 @@ class BaseClient {
       );
       stopwatch.stop();
 
-      // Handle Access Token Expiry
-      if (response.statusCode == accessTokenExpiredCode) {
-        if (kDebugMode) {
-          _logger.w('🔄 Token expired, attempting refresh...');
-        }
-
-        final refreshSuccess = await _refreshTokens();
-        if (refreshSuccess) {
-          if (kDebugMode) {
-            _logger.i('🔑 Token refresh successful, retrying request...');
-          }
-
-          // Retry the request with new token
-          final newHeaders = _buildHeaders(
-            headers: headers,
-            bearerToken: bearerToken,
-            skipAuth: skipAuth,
-          );
-
-          final retryResponse = await _dio.put(
-            fullUrl,
-            data: body,
-            queryParameters: queryParams,
-            options: Options(
-              headers: newHeaders,
-              extra: {'duration': stopwatch.elapsed},
-            ),
-            onSendProgress: (count, total) {
-              final progress = total > 0 ? count / total : 0.0;
-              uploadProgress = progress;
-              onSendProgress?.call(count, total, progress);
-              _logger.d(
-                '📤 Upload progress: ${(progress * 100).toStringAsFixed(1)}%',
-              );
-            },
-          );
-
-          return _processResponse(
-            response: retryResponse,
-            method: RequestMethodName.put,
-          );
-        } else if (context != null && context.mounted) {
-          if (kDebugMode) {
-            _logger.e('❌ Token refresh failed');
-          }
-          _handleUnauthorized(context);
-          return const NetworkClientModel.failure(
-            message: 'Session expired. Please login again.',
-            statusCode: 401,
-          );
-        }
-      }
-
-      // Handle Refresh Token Expiry
-      if (response.statusCode == refreshTokenExpiredCode &&
-          context != null &&
-          context.mounted) {
-        if (kDebugMode) {
-          _logger.e('🚫 Refresh token expired');
-        }
-        _handleUnauthorized(context);
-        return const NetworkClientModel.failure(
-          message: 'Session expired. Please login again.',
-          statusCode: 401,
-        );
-      }
-
       return _processResponse(
         response: response,
         method: RequestMethodName.put,
@@ -930,7 +594,6 @@ class BaseClient {
     Map<String, String>? pathParams,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -1034,7 +697,6 @@ class BaseClient {
     Map<String, String>? pathParams,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -1067,73 +729,6 @@ class BaseClient {
       );
       stopwatch.stop();
 
-      // Handle Access Token Expiry
-      if (response.statusCode == accessTokenExpiredCode) {
-        if (kDebugMode) {
-          _logger.w('🔄 Token expired, attempting refresh...');
-        }
-
-        final refreshSuccess = await _refreshTokens();
-        if (refreshSuccess) {
-          if (kDebugMode) {
-            _logger.i('🔑 Token refresh successful, retrying request...');
-          }
-
-          // Retry the request with new token
-          final newHeaders = _buildHeaders(
-            headers: headers,
-            bearerToken: bearerToken,
-            skipAuth: skipAuth,
-          );
-
-          final retryResponse = await _dio.patch(
-            fullUrl,
-            data: body,
-            queryParameters: queryParams,
-            options: Options(
-              headers: newHeaders,
-              extra: {'duration': stopwatch.elapsed},
-            ),
-            onSendProgress: (count, total) {
-              final progress = total > 0 ? count / total : 0.0;
-              uploadProgress = progress;
-              onSendProgress?.call(count, total, progress);
-              _logger.d(
-                '📤 Upload progress: ${(progress * 100).toStringAsFixed(1)}%',
-              );
-            },
-          );
-
-          return _processResponse(
-            response: retryResponse,
-            method: RequestMethodName.patch,
-          );
-        } else if (context != null && context.mounted) {
-          if (kDebugMode) {
-            _logger.e('❌ Token refresh failed');
-          }
-          _handleUnauthorized(context);
-          return const NetworkClientModel.failure(
-            message: 'Session expired. Please login again.',
-            statusCode: 401,
-          );
-        }
-      }
-
-      // Handle Refresh Token Expiry
-      if (response.statusCode == refreshTokenExpiredCode &&
-          context != null &&
-          context.mounted) {
-        if (kDebugMode) {
-          _logger.e('🚫 Refresh token expired');
-        }
-        _handleUnauthorized(context);
-        return const NetworkClientModel.failure(
-          message: 'Session expired. Please login again.',
-          statusCode: 401,
-        );
-      }
-
       return _processResponse(
         response: response,
         method: RequestMethodName.patch,
@@ -1153,7 +748,6 @@ class BaseClient {
     Map<String, String>? queryParams,
     Map<String, String>? pathParams,
     String? bearerToken,
-    BuildContext? context,
   }) async {
     _resetProgress();
 
@@ -1177,65 +771,6 @@ class BaseClient {
         ),
       );
       stopwatch.stop();
-
-      // Handle Access Token Expiry
-      if (response.statusCode == accessTokenExpiredCode) {
-        if (kDebugMode) {
-          _logger.w('🔄 Token expired, attempting refresh...');
-        }
-
-        final refreshSuccess = await _refreshTokens();
-        if (refreshSuccess) {
-          if (kDebugMode) {
-            _logger.i('🔑 Token refresh successful, retrying request...');
-          }
-
-          // Retry the request with new token
-          final newHeaders = _buildHeaders(
-            headers: headers,
-            bearerToken: bearerToken,
-            skipAuth: skipAuth,
-          );
-
-          final retryResponse = await _dio.delete(
-            fullUrl,
-            data: body,
-            queryParameters: queryParams,
-            options: Options(
-              headers: newHeaders,
-              extra: {'duration': stopwatch.elapsed},
-            ),
-          );
-
-          return _processResponse(
-            response: retryResponse,
-            method: RequestMethodName.delete,
-          );
-        } else if (context != null && context.mounted) {
-          if (kDebugMode) {
-            _logger.e('❌ Token refresh failed');
-          }
-          _handleUnauthorized(context);
-          return const NetworkClientModel.failure(
-            message: 'Session expired. Please login again.',
-            statusCode: 401,
-          );
-        }
-      }
-
-      // Handle Refresh Token Expiry
-      if (response.statusCode == refreshTokenExpiredCode &&
-          context != null &&
-          context.mounted) {
-        if (kDebugMode) {
-          _logger.e('🚫 Refresh token expired');
-        }
-        _handleUnauthorized(context);
-        return const NetworkClientModel.failure(
-          message: 'Session expired. Please login again.',
-          statusCode: 401,
-        );
-      }
 
       return _processResponse(
         response: response,
@@ -1368,7 +903,6 @@ class BaseClient {
     Map<String, String>? headers,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     return postMultipart(
       url,
@@ -1378,7 +912,6 @@ class BaseClient {
       headers: headers,
       bearerToken: bearerToken,
       onSendProgress: onSendProgress,
-      context: context,
     );
   }
 
@@ -1392,7 +925,6 @@ class BaseClient {
     Map<String, String>? headers,
     String? bearerToken,
     ProgressCallback? onSendProgress,
-    BuildContext? context,
   }) async {
     return postMultipart(
       url,
@@ -1402,7 +934,6 @@ class BaseClient {
       headers: headers,
       bearerToken: bearerToken,
       onSendProgress: onSendProgress,
-      context: context,
     );
   }
 
