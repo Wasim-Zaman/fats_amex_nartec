@@ -1,7 +1,7 @@
 import 'package:fats_amex_nartec/models/inventory/inventory_pagination.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../models/inventory/inventory.dart';
+import '../../../../../../models/inventory/inventory.dart';
 
 part 'inventory_state.freezed.dart';
 

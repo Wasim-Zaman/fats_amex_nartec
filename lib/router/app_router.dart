@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../view/screens/activity_selection_screen.dart';
-import '../view/screens/auth/login_screen.dart';
-import '../view/screens/dashboard/categories/categories_screen.dart';
-import '../view/screens/dashboard/locations/assets_location_screen.dart';
-import '../view/screens/dashboard/locations/locations_screen.dart';
-import '../view/screens/dashboard/new_assets/new_assets_screen.dart';
-import '../view/screens/dashboard/verified_assets/verified_assets_screen.dart';
+import '../presentation/features/dashboard/activity_selection_screen.dart';
+import '../presentation/features/auth/view/screens/login_screen.dart';
+import '../presentation/features/dashboard/categories/view/screens/categories_screen.dart';
+import '../presentation/features/dashboard/locations/view/screens/assets_location_screen.dart';
+import '../presentation/features/dashboard/locations/view/screens/locations_screen.dart';
+import '../presentation/features/dashboard/new_assets/view/screens/new_assets_screen.dart';
+import '../presentation/features/dashboard/verified_assets/view/screens/verified_assets_screen.dart';
 import 'app_redirect.dart';
 import 'app_routes.dart';
 

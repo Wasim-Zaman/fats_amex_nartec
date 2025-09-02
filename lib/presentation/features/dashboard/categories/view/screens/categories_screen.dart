@@ -3,7 +3,7 @@ import 'package:fats_amex_nartec/models/category/category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../providers/categories/categories_provider.dart';
+import '../../providers/categories_provider.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});

@@ -4,7 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../../../../providers/inventory/inventory_provider.dart';
+import '../../providers/inventory/inventory_provider.dart';
 
 class VerifiedAssetsScreen extends ConsumerStatefulWidget {
   const VerifiedAssetsScreen({super.key});

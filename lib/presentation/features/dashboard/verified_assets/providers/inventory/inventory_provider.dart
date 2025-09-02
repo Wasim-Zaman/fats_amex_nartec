@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../repositories/inventory_repository.dart';
+import '../../../../../../repositories/inventory_repository.dart';
 import 'inventory_state.dart';
 
 final inventoryRepositoryProvider = Provider((ref) => InventoryRepository());

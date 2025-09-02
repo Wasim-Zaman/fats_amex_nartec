@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/category/category.dart';
-import '../../repositories/categories_repository.dart';
+import '../../../../../models/category/category.dart';
+import '../../../../../repositories/categories_repository.dart';
 
 final categoriesProvider =
     StateNotifierProvider<CategoriesNotifier, AsyncValue<List<Category>>>(
