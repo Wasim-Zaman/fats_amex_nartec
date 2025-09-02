@@ -1,5 +1,6 @@
 import 'package:fats_amex_nartec/core/extensions/context.dart';
-import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
+import 'package:fats_amex_nartec/router/app_navigator.dart';
+import 'package:fats_amex_nartec/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,7 +8,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/snack_util.dart';
 import '../../../widgets/buttons/custom_elevated_button.dart';
 import '../../../widgets/text_fields/custom_text_field.dart';
-import 'assets_location_screen.dart';
 
 class LocationsScreen extends StatefulWidget {
   const LocationsScreen({super.key});
@@ -192,6 +192,6 @@ class _LocationsScreenState extends State<LocationsScreen> {
   }
 
   void _handleViewLocations() {
-    NavigationUtil.push(context, AssetsLocationsScreen());
+    AppNavigator.push(context, AppRoutes.assetsLocation);
   }
 }

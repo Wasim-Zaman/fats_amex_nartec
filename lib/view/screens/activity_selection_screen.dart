@@ -1,13 +1,10 @@
 import 'package:fats_amex_nartec/core/extensions/context.dart';
-import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
-import 'package:fats_amex_nartec/view/screens/dashboard/categories/categories_screen.dart';
-import 'package:fats_amex_nartec/view/screens/dashboard/locations/locations_screen.dart';
-import 'package:fats_amex_nartec/view/screens/dashboard/verified_assets/verified_assets_screen.dart';
+import 'package:fats_amex_nartec/router/app_navigator.dart';
+import 'package:fats_amex_nartec/router/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../core/constants/app_colors.dart';
-import 'dashboard/new_assets/new_assets_screen.dart';
 
 class ActivitySelectionScreen extends StatelessWidget {
   const ActivitySelectionScreen({super.key});
@@ -40,9 +37,9 @@ class ActivitySelectionScreen extends StatelessWidget {
                   'Locations',
                   AppIcons.location,
                   onTap: () {
-                    NavigationUtil.push(
+                    AppNavigator.push(
                       context,
-                      const LocationsScreen(),
+                      AppRoutes.locations,
                     );
                   },
                 ),
@@ -51,9 +48,9 @@ class ActivitySelectionScreen extends StatelessWidget {
                   'Categories',
                   AppIcons.categories,
                   onTap: () {
-                    NavigationUtil.push(
+                    AppNavigator.push(
                       context,
-                      const CategoriesScreen(),
+                      AppRoutes.categories,
                     );
                   },
                 ),
@@ -62,7 +59,7 @@ class ActivitySelectionScreen extends StatelessWidget {
                   'New Assets',
                   AppIcons.newAssets,
                   onTap: () {
-                    NavigationUtil.push(context, const NewAssetsScreen());
+                    AppNavigator.push(context, AppRoutes.newAssets);
                   },
                 ),
                 _buildActivityCard(
@@ -82,9 +79,9 @@ class ActivitySelectionScreen extends StatelessWidget {
                   'Verified Assets',
                   AppIcons.verifiedAssets,
                   onTap: () {
-                    NavigationUtil.push(
+                    AppNavigator.push(
                       context,
-                      const VerifiedAssetsScreen(),
+                      AppRoutes.verifiedAssets,
                     );
                   },
                 ),

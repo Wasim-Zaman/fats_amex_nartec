@@ -1,5 +1,6 @@
 import 'package:fats_amex_nartec/core/constants/app_colors.dart';
 import 'package:fats_amex_nartec/core/extensions/context.dart';
+import 'package:fats_amex_nartec/router/app_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,7 +55,7 @@ class _NewAssetsScreenState extends ConsumerState<NewAssetsScreen> {
         title: const Text('Capture Assets'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => AppNavigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(

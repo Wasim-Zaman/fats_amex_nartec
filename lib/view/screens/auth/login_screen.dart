@@ -1,6 +1,6 @@
-import 'package:fats_amex_nartec/core/utils/navigation_util.dart';
 import 'package:fats_amex_nartec/core/utils/snack_util.dart';
-import 'package:fats_amex_nartec/view/screens/activity_selection_screen.dart';
+import 'package:fats_amex_nartec/router/app_navigator.dart';
+import 'package:fats_amex_nartec/router/app_routes.dart';
 import 'package:fats_amex_nartec/view/widgets/buttons/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _handleNavigate() {
-    NavigationUtil.pushReplacement(context, const ActivitySelectionScreen());
+    AppNavigator.pushReplacement(context, AppRoutes.activitySelection);
   }
 
   @override
