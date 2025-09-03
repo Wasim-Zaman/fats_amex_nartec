@@ -95,7 +95,12 @@ class ActivitySelectionScreen extends StatelessWidget {
                   context,
                   'Update',
                   AppIcons.update,
-                  onTap: () {/* TODO: Handle navigation */},
+                  onTap: () {
+                    AppNavigator.push(
+                      context,
+                      AppRoutes.updateAsset,
+                    );
+                  },
                 ),
               ],
             ),

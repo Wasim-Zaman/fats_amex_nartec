@@ -8,6 +8,7 @@ import '../presentation/features/dashboard/locations/view/screens/assets_locatio
 import '../presentation/features/dashboard/locations/view/screens/locations_screen.dart';
 import '../presentation/features/dashboard/new_assets/view/screens/new_assets_screen.dart';
 import '../presentation/features/dashboard/verified_assets/view/screens/verified_assets_screen.dart';
+import '../presentation/features/dashboard/update/view/screens/update_verified_asset_screen.dart';
 import 'app_redirect.dart';
 import 'app_routes.dart';
 
@@ -66,6 +67,13 @@ class AppRouter {
         path: AppRoutes.verifiedAssets,
         name: AppRoutes.verifiedAssetsName,
         builder: (context, state) => const VerifiedAssetsScreen(),
+      ),
+
+      // Update Asset Screen
+      GoRoute(
+        path: AppRoutes.updateAsset,
+        name: AppRoutes.updateAssetName,
+        builder: (context, state) => const UpdateVerifiedAssetScreen(),
       ),
     ],
 
